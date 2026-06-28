@@ -2,7 +2,7 @@
 
 GrowthOS is a personal success operating system for planning intentional work, tracking focused time, measuring consistency, and building momentum across career, business, health, and personal growth goals.
 
-This repository currently contains the Phase 1 foundation only. Authentication, projects, tasks, timers, dashboards, and analytics are intentionally not implemented yet.
+This repository currently contains the Phase 2 authentication and app shell foundation. Projects, tasks, timers, logs, analytics, and dashboard data are intentionally not implemented yet.
 
 ## Stack
 
@@ -25,6 +25,7 @@ Set up backend environment:
 cp backend/.env.example backend/.env
 cd backend
 npm install
+npm run prisma:migrate -- --name add-user-auth
 npm run prisma:generate
 npm run start:dev
 ```
@@ -37,6 +38,12 @@ Check health:
 curl http://localhost:4000/health
 ```
 
+Auth endpoints:
+
+- `POST /auth/register` with `name`, `email`, and `password`
+- `POST /auth/login` with `email` and `password`
+- `GET /auth/me` with `Authorization: Bearer <accessToken>`
+
 Set up frontend environment:
 
 ```bash
@@ -47,6 +54,14 @@ npm run dev
 ```
 
 The frontend runs on `http://localhost:3000`.
+
+Auth pages:
+
+- Register: `http://localhost:3000/auth/register`
+- Login: `http://localhost:3000/auth/login`
+- Protected app pages: `/dashboard`, `/planner`, `/projects`, `/logs`, `/settings`
+
+For this MVP phase, the frontend stores the JWT access token in `localStorage` through centralized helpers in `frontend/src/lib/auth-token.ts`.
 
 ## Phase 1 Checklist
 
@@ -61,3 +76,15 @@ The frontend runs on `http://localhost:3000`.
 - [x] Health endpoint at `GET /health`
 - [x] Local PostgreSQL Docker Compose service
 - [x] Environment examples for frontend and backend
+
+## Phase 2 Checklist
+
+- [x] Prisma `User` model with unique email and password hash
+- [x] Register, login, and current-user auth endpoints
+- [x] Password hashing with bcrypt
+- [x] JWT login response and protected `GET /auth/me`
+- [x] DTO validation with global Nest validation pipe
+- [x] Frontend register and login pages
+- [x] Centralized API client and token storage helpers
+- [x] Protected frontend app shell with navigation, user identity, and logout
+- [x] Placeholder app pages remain protected
