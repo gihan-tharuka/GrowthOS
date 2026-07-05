@@ -48,8 +48,8 @@ test("registers, logs in, creates a project and completes a planner task", async
 
   const taskCard = page.locator("article").filter({ hasText: data.taskTitle }).first();
   await expect(taskCard).toBeVisible();
-  await expect(taskCard.getByText("PLANNED")).toBeVisible();
+  await expect(taskCard.getByText("PLANNED", { exact: true })).toBeVisible();
 
   await taskCard.getByRole("button", { name: "Complete" }).click();
-  await expect(taskCard.getByText("COMPLETED")).toBeVisible();
+  await expect(taskCard.getByText("COMPLETED", { exact: true })).toBeVisible();
 });

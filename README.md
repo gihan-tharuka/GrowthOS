@@ -83,6 +83,13 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
+Headed browser mode:
+
+```bash
+cd frontend
+npm run test:e2e:headed
+```
+
 Optional UI mode:
 
 ```bash
@@ -95,6 +102,7 @@ E2E notes:
 - Docker PostgreSQL should be running before the tests.
 - `backend/.env` must exist with `DATABASE_URL`, `PORT`, and `JWT_SECRET`.
 - Playwright starts the backend on `http://127.0.0.1:4000` and the frontend on `http://127.0.0.1:3000`.
+- `npm run test:e2e:headed` runs the same Chromium test flow in a visible browser window.
 - The e2e test creates a unique user, project, and task on every run to avoid collisions.
 
 Projects and tasks notes:

@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const slowMo = Number(process.env.PLAYWRIGHT_SLOW_MO ?? 0);
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -7,6 +9,9 @@ export default defineConfig({
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: "http://localhost:3000",
+    launchOptions: {
+      slowMo: Number.isFinite(slowMo) ? slowMo : 0,
+    },
     trace: "on-first-retry",
   },
   projects: [
