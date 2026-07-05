@@ -2,7 +2,7 @@
 
 GrowthOS is a personal success operating system for planning intentional work, tracking focused time, measuring consistency, and building momentum across career, business, health, and personal growth goals.
 
-This repository currently contains the Phase 2 authentication and app shell foundation. Projects, tasks, timers, logs, analytics, and dashboard data are intentionally not implemented yet.
+This repository currently contains the Phase 3 projects and tasks foundation. Timers, time sessions, analytics, logs, Pomodoro flows, habits, journals, workouts, payments, and dashboard metrics are intentionally not implemented yet.
 
 ## Stack
 
@@ -43,6 +43,18 @@ Auth endpoints:
 - `POST /auth/register` with `name`, `email`, and `password`
 - `POST /auth/login` with `email` and `password`
 - `GET /auth/me` with `Authorization: Bearer <accessToken>`
+- `GET /projects`
+- `POST /projects`
+- `GET /projects/:id`
+- `PATCH /projects/:id`
+- `DELETE /projects/:id`
+- `PATCH /projects/:id/archive`
+- `GET /tasks?date=YYYY-MM-DD&projectId=<id>&status=<status>`
+- `POST /tasks`
+- `GET /tasks/:id`
+- `PATCH /tasks/:id`
+- `DELETE /tasks/:id`
+- `PATCH /tasks/:id/complete`
 
 Set up frontend environment:
 
@@ -62,6 +74,13 @@ Auth pages:
 - Protected app pages: `/dashboard`, `/planner`, `/projects`, `/logs`, `/settings`
 
 For this MVP phase, the frontend stores the JWT access token in `localStorage` through centralized helpers in `frontend/src/lib/auth-token.ts`.
+
+Projects and tasks notes:
+
+- Every project and task is scoped to the authenticated user.
+- Tasks must belong to a project owned by the same authenticated user.
+- Planner tasks are filtered by selected date using `YYYY-MM-DD`.
+- Scheduled task dates are stored as UTC midnight dates to keep planner filtering consistent.
 
 ## Phase 1 Checklist
 
@@ -88,3 +107,14 @@ For this MVP phase, the frontend stores the JWT access token in `localStorage` t
 - [x] Centralized API client and token storage helpers
 - [x] Protected frontend app shell with navigation, user identity, and logout
 - [x] Placeholder app pages remain protected
+
+## Phase 3 Checklist
+
+- [x] Prisma `Project` and `Task` models with enums and ownership relations
+- [x] Guarded projects CRUD endpoints with archive support
+- [x] Guarded tasks CRUD endpoints with completion support
+- [x] Task filters by date, project, and status
+- [x] User ownership checks with `404` for non-owned resources
+- [x] Frontend project management page with create, edit, archive, and delete
+- [x] Frontend planner page with date-based tasks, daily summary, and task actions
+- [x] Reusable project and planner UI components

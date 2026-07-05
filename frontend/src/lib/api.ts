@@ -1,3 +1,5 @@
+import { getAccessToken } from "./auth-token";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 type ApiRequestOptions = RequestInit & {
@@ -56,4 +58,17 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   }
 
   return body as T;
+}
+
+export function authenticatedApiRequest<T>(path: string, options: RequestInit = {}) {
+  const token = getAccessToken();
+
+  if (!token) {
+    throw new ApiError("You need to log in to continue.", 401);
+  }
+
+  return apiRequest<T>(path, {
+    ...options,
+    token,
+  });
 }
