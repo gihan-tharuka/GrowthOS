@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { CreateTaskInput, Project, Task, TaskPriority, TaskStatus } from "@/types";
@@ -85,6 +85,38 @@ export function TaskForm({
 }: TaskFormProps) {
   const [values, setValues] = useState(() => buildInitialValues(projects, selectedDate, initialValues));
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setValues((current) => {
+      const hasMatchingProject = projects.some((project) => project.id === current.projectId);
+
+      if (hasMatchingProject) {
+        return current;
+      }
+
+      return {
+        ...current,
+        projectId: initialValues?.projectId ?? projects[0]?.id ?? "",
+      };
+    });
+  }, [initialValues?.projectId, projects]);
+
+  useEffect(() => {
+    if (initialValues) {
+      return;
+    }
+
+    setValues((current) => {
+      if (current.scheduledDate === selectedDate) {
+        return current;
+      }
+
+      return {
+        ...current,
+        scheduledDate: selectedDate,
+      };
+    });
+  }, [initialValues, selectedDate]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

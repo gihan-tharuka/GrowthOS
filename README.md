@@ -75,6 +75,28 @@ Auth pages:
 
 For this MVP phase, the frontend stores the JWT access token in `localStorage` through centralized helpers in `frontend/src/lib/auth-token.ts`.
 
+Playwright e2e:
+
+```bash
+cd frontend
+npx playwright install chromium
+npm run test:e2e
+```
+
+Optional UI mode:
+
+```bash
+cd frontend
+npm run test:e2e:ui
+```
+
+E2E notes:
+
+- Docker PostgreSQL should be running before the tests.
+- `backend/.env` must exist with `DATABASE_URL`, `PORT`, and `JWT_SECRET`.
+- Playwright starts the backend on `http://127.0.0.1:4000` and the frontend on `http://127.0.0.1:3000`.
+- The e2e test creates a unique user, project, and task on every run to avoid collisions.
+
 Projects and tasks notes:
 
 - Every project and task is scoped to the authenticated user.
@@ -118,3 +140,10 @@ Projects and tasks notes:
 - [x] Frontend project management page with create, edit, archive, and delete
 - [x] Frontend planner page with date-based tasks, daily summary, and task actions
 - [x] Reusable project and planner UI components
+
+## Phase 3.5 Checklist
+
+- [x] Playwright installed in `frontend/`
+- [x] Local Playwright config for frontend and backend web servers
+- [x] E2E scripts for headless and UI mode
+- [x] End-to-end flow covering register, login, project creation, task creation, and task completion
