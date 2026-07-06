@@ -1,6 +1,6 @@
 import { getAccessToken } from "./auth-token";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type ApiRequestOptions = RequestInit & {
   token?: string | null;
@@ -34,6 +34,14 @@ function getErrorMessage(body: unknown) {
   return "Something went wrong.";
 }
 
+function getApiUrl() {
+  if (!API_URL) {
+    throw new ApiError("API base URL is not configured.", 500);
+  }
+
+  return API_URL.replace(/\/$/, "");
+}
+
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers);
 
@@ -45,7 +53,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     headers.set("Authorization", `Bearer ${options.token}`);
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${getApiUrl()}${path}`, {
     ...options,
     headers,
   });
