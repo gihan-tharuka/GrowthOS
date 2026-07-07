@@ -6,7 +6,7 @@ This repository currently contains the Phase 5 projects, tasks, task timer, logs
 
 ## Stack
 
-- Frontend: Next.js, TypeScript, Tailwind CSS, shadcn/ui structure
+- Frontend: Next.js, TypeScript, Tailwind CSS, shadcn/ui structure, Zustand
 - Backend: NestJS, TypeScript, Prisma
 - Database: PostgreSQL via Docker Compose
 - Monorepo layout: `frontend/` and `backend/`
@@ -195,6 +195,7 @@ Projects and tasks notes:
 - Only one running or paused timer is allowed per user.
 - Stopping a timer completes the time session but leaves the task open.
 - Dashboard analytics and logs are derived from user-owned tasks, projects, and completed time sessions.
+- Zustand stores shared client state for auth, active timer, planner date, and lightweight UI state.
 
 ## Phase 1 Checklist
 
@@ -258,3 +259,11 @@ Projects and tasks notes:
 - [x] Dashboard today task preview and time-by-project summary
 - [x] Logs table with estimate, actual tracked time, project, and status
 - [x] Playwright coverage for tracked task visibility on dashboard and logs
+
+## Phase 5.5 Checklist
+
+- [x] Zustand installed in the frontend
+- [x] Auth store hydrates and owns token-backed auth state through existing helpers
+- [x] Timer store owns active timer state and timer actions through existing API clients
+- [x] Planner store owns selected planner date
+- [x] App shell, active timer bar, and planner timer controls use shared stores

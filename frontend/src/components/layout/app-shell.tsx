@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 
 import { ActiveTimerBar } from "@/components/layout/active-timer-bar";
 import { Button } from "@/components/ui/button";
-import { me } from "@/lib/auth-api";
-import { clearAccessToken, getAccessToken } from "@/lib/auth-token";
-import type { AppRoute, SafeUser } from "@/types";
+import { useAuthStore } from "@/stores/auth-store";
+import { useTimerStore } from "@/stores/timer-store";
+import type { AppRoute } from "@/types";
 import { cn } from "@/lib/utils";
 
 const routes: AppRoute[] = [
@@ -26,41 +26,26 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<SafeUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const hydrateAuth = useAuthStore((state) => state.hydrateAuth);
+  const logout = useAuthStore((state) => state.logout);
+  const clearTimer = useTimerStore((state) => state.clearTimer);
 
   useEffect(() => {
-    let isMounted = true;
-    const token = getAccessToken();
+    void hydrateAuth();
+  }, [hydrateAuth]);
 
-    if (!token) {
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
       router.replace("/auth/login");
-      return;
     }
-
-    me(token)
-      .then((response) => {
-        if (isMounted) {
-          setUser(response.user);
-        }
-      })
-      .catch(() => {
-        clearAccessToken();
-        router.replace("/auth/login");
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [router]);
+  }, [isAuthenticated, isLoading, router]);
 
   function handleLogout() {
-    clearAccessToken();
+    logout();
+    clearTimer();
     router.replace("/auth/login");
   }
 
@@ -72,7 +57,7 @@ export function AppShell({ children }: AppShellProps) {
     );
   }
 
-  if (!user) {
+  if (!user || !isAuthenticated) {
     return null;
   }
 

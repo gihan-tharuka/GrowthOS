@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
-import { getActiveTimer, pauseTimer, resumeTimer, stopTimer } from "@/lib/timer-api";
-import type { TimeSession } from "@/types";
+import { useTimerStore } from "@/stores/timer-store";
 
 export const TIMER_UPDATED_EVENT = "growthos:timer-updated";
 
@@ -24,48 +23,32 @@ function formatElapsed(totalSeconds: number) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function getElapsedSeconds(session: TimeSession, now: number) {
-  if (session.status !== "RUNNING") {
-    return session.elapsedSeconds;
-  }
-
-  const startedAt = new Date(session.startedAt).getTime();
-  return session.durationSeconds + Math.max(0, Math.floor((now - startedAt) / 1000));
-}
-
 export function ActiveTimerBar() {
-  const [session, setSession] = useState<TimeSession | null>(null);
-  const [now, setNow] = useState(() => Date.now());
-  const [isBusy, setIsBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function loadActiveTimer() {
-    try {
-      const response = await getActiveTimer();
-      setSession(response.session);
-      setError(null);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load active timer.");
-    }
-  }
+  const session = useTimerStore((state) => state.activeTimer);
+  const elapsed = useTimerStore((state) => state.elapsedSeconds);
+  const isBusy = useTimerStore((state) => state.isLoading);
+  const error = useTimerStore((state) => state.error);
+  const fetchActiveTimer = useTimerStore((state) => state.fetchActiveTimer);
+  const pauseTimer = useTimerStore((state) => state.pauseTimer);
+  const resumeTimer = useTimerStore((state) => state.resumeTimer);
+  const stopTimer = useTimerStore((state) => state.stopTimer);
+  const tick = useTimerStore((state) => state.tick);
 
   useEffect(() => {
-    void loadActiveTimer();
+    void fetchActiveTimer();
 
     function handleTimerUpdated() {
-      void loadActiveTimer();
+      void fetchActiveTimer();
     }
 
     window.addEventListener(TIMER_UPDATED_EVENT, handleTimerUpdated);
     return () => window.removeEventListener(TIMER_UPDATED_EVENT, handleTimerUpdated);
-  }, []);
+  }, [fetchActiveTimer]);
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
+    const intervalId = window.setInterval(tick, 1000);
     return () => window.clearInterval(intervalId);
-  }, []);
-
-  const elapsed = useMemo(() => (session ? getElapsedSeconds(session, now) : 0), [now, session]);
+  }, [tick]);
 
   async function handlePause() {
     if (!session) {
@@ -73,14 +56,10 @@ export function ActiveTimerBar() {
     }
 
     try {
-      setIsBusy(true);
-      setError(null);
-      setSession(await pauseTimer(session.taskId));
+      await pauseTimer(session.taskId);
       notifyTimerUpdated();
-    } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : "Unable to pause timer.");
-    } finally {
-      setIsBusy(false);
+    } catch {
+      return;
     }
   }
 
@@ -90,14 +69,10 @@ export function ActiveTimerBar() {
     }
 
     try {
-      setIsBusy(true);
-      setError(null);
-      setSession(await resumeTimer(session.taskId));
+      await resumeTimer(session.taskId);
       notifyTimerUpdated();
-    } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : "Unable to resume timer.");
-    } finally {
-      setIsBusy(false);
+    } catch {
+      return;
     }
   }
 
@@ -107,15 +82,10 @@ export function ActiveTimerBar() {
     }
 
     try {
-      setIsBusy(true);
-      setError(null);
       await stopTimer(session.taskId);
-      setSession(null);
       notifyTimerUpdated();
-    } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : "Unable to stop timer.");
-    } finally {
-      setIsBusy(false);
+    } catch {
+      return;
     }
   }
 

@@ -6,7 +6,7 @@ import { FormEvent, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { login } from "@/lib/auth-api";
-import { setAccessToken } from "@/lib/auth-token";
+import { useAuthStore } from "@/stores/auth-store";
 
 function validateForm(email: string, password: string) {
   if (!email.includes("@")) {
@@ -22,6 +22,7 @@ function validateForm(email: string, password: string) {
 
 export function LoginForm() {
   const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +43,7 @@ export function LoginForm() {
 
     try {
       const response = await login({ email, password });
-      setAccessToken(response.accessToken);
+      setAuth(response.accessToken, response.user);
       router.push("/dashboard");
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Unable to log in.");

@@ -4,20 +4,22 @@ import { useEffect, useState } from "react";
 
 import { DailySummary } from "@/components/planner/daily-summary";
 import { DateSelector } from "@/components/planner/date-selector";
-import { notifyTimerUpdated, TIMER_UPDATED_EVENT } from "@/components/layout/active-timer-bar";
 import { TaskCard } from "@/components/planner/task-card";
 import { TaskForm } from "@/components/planner/task-form";
 import { listProjects } from "@/lib/projects-api";
 import { completeTask, createTask, deleteTask, listTasks, updateTask } from "@/lib/tasks-api";
-import { pauseTimer, resumeTimer, startTimer, stopTimer } from "@/lib/timer-api";
+import { usePlannerStore } from "@/stores/planner-store";
+import { useTimerStore } from "@/stores/timer-store";
 import type { CreateTaskInput, Project, Task } from "@/types";
 
-function todayString() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export default function PlannerPage() {
-  const [selectedDate, setSelectedDate] = useState(todayString);
+  const selectedDate = usePlannerStore((state) => state.selectedDate);
+  const setSelectedDate = usePlannerStore((state) => state.setSelectedDate);
+  const startTimer = useTimerStore((state) => state.startTimer);
+  const pauseTimer = useTimerStore((state) => state.pauseTimer);
+  const resumeTimer = useTimerStore((state) => state.resumeTimer);
+  const stopTimer = useTimerStore((state) => state.stopTimer);
+  const activeTimer = useTimerStore((state) => state.activeTimer);
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,13 +51,8 @@ export default function PlannerPage() {
   }, [selectedDate]);
 
   useEffect(() => {
-    function handleTimerUpdated() {
-      void loadPlannerData();
-    }
-
-    window.addEventListener(TIMER_UPDATED_EVENT, handleTimerUpdated);
-    return () => window.removeEventListener(TIMER_UPDATED_EVENT, handleTimerUpdated);
-  }, [selectedDate]);
+    void loadPlannerData();
+  }, [activeTimer?.status, activeTimer?.updatedAt]);
 
   async function handleCreate(values: CreateTaskInput) {
     try {
@@ -133,7 +130,6 @@ export default function PlannerPage() {
       }
 
       await loadPlannerData();
-      notifyTimerUpdated();
     } catch (error) {
       setPageError(error instanceof Error ? error.message : "Unable to update timer.");
     } finally {
