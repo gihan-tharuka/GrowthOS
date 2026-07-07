@@ -91,6 +91,67 @@ export type ActiveTimerResponse = {
   session: TimeSession | null;
 };
 
+export type TimeByProject = {
+  projectId: string;
+  projectName: string;
+  color: string | null;
+  durationSeconds: number;
+};
+
+export type TodayTaskPreview = {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  estimatedMinutes: number;
+  project: TaskProject;
+};
+
+export type AnalyticsSummary = {
+  todayFocusSeconds: number;
+  todayCompletedTasks: number;
+  weeklyFocusSeconds: number;
+  activeProjects: number;
+  timeByProject: TimeByProject[];
+  todayTasks: TodayTaskPreview[];
+};
+
+export type DailyAnalytics = {
+  date: string;
+  focusSeconds: number;
+  completedTasks: number;
+  plannedTasks: number;
+  estimatedMinutes: number;
+  actualSeconds: number;
+  plannedVsActual: number;
+};
+
+export type WeeklyAnalyticsDay = {
+  date: string;
+  focusSeconds: number;
+  completedTasks: number;
+};
+
+export type WeeklyAnalytics = {
+  from: string;
+  to: string;
+  days: WeeklyAnalyticsDay[];
+  totalFocusSeconds: number;
+  totalCompletedTasks: number;
+};
+
+export type LogRow = {
+  date: string;
+  taskId: string;
+  taskTitle: string;
+  projectId: string;
+  projectName: string;
+  projectColor: string | null;
+  estimatedMinutes: number;
+  actualSeconds: number;
+  status: TaskStatus;
+  completedAt: string | null;
+};
+
 export type CreateProjectInput = {
   name: string;
   description?: string;

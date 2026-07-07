@@ -25,7 +25,7 @@ test("registers, logs in, creates a project and completes a planner task", async
   await page.getByRole("button", { name: "Log in" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Today at a glance" })).toBeVisible();
 
   await page.getByRole("link", { name: "Projects" }).click();
   await expect(page).toHaveURL(/\/projects$/);
@@ -72,7 +72,7 @@ test("registers, creates a planner task, and controls the task timer", async ({ 
   await page.getByRole("button", { name: "Log in" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Today at a glance" })).toBeVisible();
 
   await page.getByRole("link", { name: "Projects" }).click();
   await page.getByLabel("Project name").fill(data.projectName);
@@ -95,6 +95,7 @@ test("registers, creates a planner task, and controls the task timer", async ({ 
   await taskCard.getByRole("button", { name: "Start" }).click();
   await expect(taskCard.getByText("IN PROGRESS", { exact: true })).toBeVisible();
   await expect(activeTimer.getByText(data.taskTitle)).toBeVisible();
+  await page.waitForTimeout(1100);
 
   await taskCard.getByRole("button", { name: "Pause" }).click();
   await expect(taskCard.getByText("PAUSED", { exact: true })).toBeVisible();
@@ -107,4 +108,18 @@ test("registers, creates a planner task, and controls the task timer", async ({ 
   await taskCard.getByRole("button", { name: "Stop" }).click();
   await expect(taskCard.getByText("PLANNED", { exact: true })).toBeVisible();
   await expect(activeTimer).toBeHidden();
+
+  await page.getByRole("link", { name: "Dashboard" }).click();
+  await expect(page.getByRole("heading", { name: "Today at a glance" })).toBeVisible();
+  await expect(page.getByText(data.taskTitle)).toBeVisible();
+  await expect(page.getByText(data.projectName, { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("0s")).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Logs" }).click();
+  await expect(page.getByRole("heading", { name: "Focus and task history" })).toBeVisible();
+
+  const logRow = page.locator("tr").filter({ hasText: data.taskTitle }).first();
+  await expect(logRow).toBeVisible();
+  await expect(logRow.getByText(data.projectName)).toBeVisible();
+  await expect(logRow.locator("td").nth(4)).not.toHaveText("0s");
 });

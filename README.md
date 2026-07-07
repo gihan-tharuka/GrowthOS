@@ -2,7 +2,7 @@
 
 GrowthOS is a personal success operating system for planning intentional work, tracking focused time, measuring consistency, and building momentum across career, business, health, and personal growth goals.
 
-This repository currently contains the Phase 4 projects, tasks, and task timer foundation. Analytics, logs metrics, Pomodoro flows, habits, journals, workouts, payments, and dashboard metrics are intentionally not implemented yet.
+This repository currently contains the Phase 5 projects, tasks, task timer, logs, and dashboard analytics foundation. Pomodoro flows, habits, journals, workouts, payments, and advanced reporting are intentionally not implemented yet.
 
 ## Stack
 
@@ -61,6 +61,10 @@ Auth endpoints:
 - `POST /tasks/:taskId/timer/stop`
 - `GET /timer/active`
 - `GET /tasks/:taskId/sessions`
+- `GET /analytics/summary`
+- `GET /analytics/daily?date=YYYY-MM-DD`
+- `GET /analytics/weekly?from=YYYY-MM-DD&to=YYYY-MM-DD`
+- `GET /logs?from=YYYY-MM-DD&to=YYYY-MM-DD&projectId=<id>`
 
 Set up frontend environment:
 
@@ -179,6 +183,7 @@ E2E notes:
 - `npm run test:e2e:headed` runs the same Chromium test flow in a visible browser window.
 - The e2e tests create unique users, projects, and tasks on every run to avoid collisions.
 - Timer e2e covers start, pause, resume, and stop without asserting exact elapsed seconds.
+- Analytics/logs e2e confirms a tracked task appears on the dashboard and logs page after the timer stops.
 
 Projects and tasks notes:
 
@@ -189,6 +194,7 @@ Projects and tasks notes:
 - Timer sessions are scoped to the authenticated user and task.
 - Only one running or paused timer is allowed per user.
 - Stopping a timer completes the time session but leaves the task open.
+- Dashboard analytics and logs are derived from user-owned tasks, projects, and completed time sessions.
 
 ## Phase 1 Checklist
 
@@ -243,3 +249,12 @@ Projects and tasks notes:
 - [x] Active timer bar in the protected app shell
 - [x] Planner task cards with timer controls
 - [x] Playwright timer flow for start, pause, resume, and stop
+
+## Phase 5 Checklist
+
+- [x] Guarded analytics endpoints for summary, daily, and weekly views
+- [x] Guarded logs endpoint with date range and optional project filter
+- [x] Dashboard cards for today focus, completed tasks, weekly focus, and active projects
+- [x] Dashboard today task preview and time-by-project summary
+- [x] Logs table with estimate, actual tracked time, project, and status
+- [x] Playwright coverage for tracked task visibility on dashboard and logs
