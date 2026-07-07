@@ -69,57 +69,51 @@ The frontend runs on `http://localhost:3000`.
 
 ## Deployment
 
-### Neon PostgreSQL
+### PostgreSQL
 
-1. Create a Neon project and database.
-2. In the Neon console, open `Connect`.
-3. Copy the pooled connection string for your application and use it as `DATABASE_URL`.
-4. Copy the direct connection string for Prisma CLI work and keep it available when you run production migrations.
+1. Provision your production PostgreSQL database.
+2. Copy the runtime connection string and store it as `DATABASE_URL` for the backend service.
+3. Keep the same `DATABASE_URL` available when you run Prisma production migrations.
 
-### Render backend
+### Backend on Cloud Run
 
-1. Create a new Web Service from this repository.
-2. Set the Root Directory to `backend`.
-3. Set the Build Command to:
+1. Build the backend container from `backend/Dockerfile`.
+2. Push the image to Artifact Registry or another registry Cloud Run can pull from.
+3. Deploy the image to Cloud Run and inject runtime environment variables.
+4. Use `/health` as the health check endpoint. It returns `{ status, service, timestamp }`.
 
-```bash
-npm install && npm run prisma:generate && npm run build
-```
-
-4. Set the Start Command to:
+Sample deploy command:
 
 ```bash
-npm run start:prod
+gcloud run deploy growthos-backend \
+  --image=REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/growthos-backend:TAG \
+  --region=REGION \
+  --platform=managed \
+  --allow-unauthenticated \
+  --set-env-vars NODE_ENV=production,DATABASE_URL=YOUR_DATABASE_URL,JWT_SECRET=YOUR_JWT_SECRET,CORS_ORIGIN=https://your-frontend.vercel.app
 ```
 
-5. Set the Health Check Path to `/health`.
-6. Add the backend environment variables listed below.
-7. After the first deploy, run production migrations with:
-
-```bash
-npm run prisma:migrate:deploy
-```
-
-### Vercel frontend
+### Frontend on Vercel
 
 1. Import this repository into Vercel.
 2. Set the Root Directory to `frontend`.
 3. Keep the framework preset as Next.js.
-4. Add `NEXT_PUBLIC_API_URL` pointing at your Render backend URL, for example `https://growthos-api.onrender.com`.
+4. Add `NEXT_PUBLIC_API_URL` pointing at your Cloud Run backend URL, for example `https://growthos-backend-xxxxx.a.run.app`.
 5. Deploy, then redeploy after any environment variable changes.
 
 ### Required environment variables
 
-Backend on Render:
+Backend on Cloud Run:
 
-- `DATABASE_URL`: Neon pooled PostgreSQL connection string
+- `PORT`: provided by Cloud Run automatically
+- `NODE_ENV`: `production`
+- `DATABASE_URL`: production PostgreSQL connection string
 - `JWT_SECRET`: long random secret for signing access tokens
-- `PORT`: Render will provide this automatically, but `4000` is fine locally
 - `CORS_ORIGIN`: comma-separated allowed frontend origins, for example `http://localhost:3000,https://your-app.vercel.app`
 
 Frontend on Vercel:
 
-- `NEXT_PUBLIC_API_URL`: public Render backend URL, for example `https://growthos-api.onrender.com`
+- `NEXT_PUBLIC_API_URL`: public Cloud Run backend URL, for example `https://growthos-backend-xxxxx.a.run.app`
 
 ### Production migration command
 
@@ -127,7 +121,7 @@ Use Prisma's production-safe migration command against the production database:
 
 ```bash
 cd backend
-npm run prisma:migrate:deploy
+DATABASE_URL="YOUR_DATABASE_URL" npm run prisma:migrate:deploy
 ```
 
 ### Production smoke test checklist
@@ -138,7 +132,7 @@ npm run prisma:migrate:deploy
 - Create a project.
 - Create a planner task for today.
 - Mark the task complete.
-- Hit `https://your-render-service.onrender.com/health` and confirm it returns `status: ok`.
+- Hit `https://YOUR_CLOUD_RUN_URL/health` and confirm it returns JSON with `status`, `service`, and `timestamp`.
 
 Auth pages:
 
@@ -173,7 +167,7 @@ npm run test:e2e:ui
 E2E notes:
 
 - Docker PostgreSQL should be running before the tests.
-- `backend/.env` must exist with `DATABASE_URL`, `PORT`, `JWT_SECRET`, and `CORS_ORIGIN`.
+- `backend/.env` must exist with `DATABASE_URL`, `PORT`, `NODE_ENV`, `JWT_SECRET`, and `CORS_ORIGIN`.
 - Local Docker PostgreSQL is mapped to `localhost:5433` to avoid collisions with other Postgres instances that may already be using `5432`.
 - Playwright starts the backend on `http://localhost:4000` and the frontend on `http://localhost:3000`.
 - `npm run test:e2e:headed` runs the same Chromium test flow in a visible browser window.
