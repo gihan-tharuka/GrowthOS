@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 
 import { DailySummary } from "@/components/planner/daily-summary";
 import { DateSelector } from "@/components/planner/date-selector";
+import { notifyTimerUpdated, TIMER_UPDATED_EVENT } from "@/components/layout/active-timer-bar";
 import { TaskCard } from "@/components/planner/task-card";
 import { TaskForm } from "@/components/planner/task-form";
 import { listProjects } from "@/lib/projects-api";
 import { completeTask, createTask, deleteTask, listTasks, updateTask } from "@/lib/tasks-api";
+import { pauseTimer, resumeTimer, startTimer, stopTimer } from "@/lib/timer-api";
 import type { CreateTaskInput, Project, Task } from "@/types";
 
 function todayString() {
@@ -25,25 +27,34 @@ export default function PlannerPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
+  async function loadPlannerData() {
+    try {
+      setIsLoading(true);
+      setPageError(null);
+      const [nextProjects, nextTasks] = await Promise.all([
+        listProjects(),
+        listTasks({ date: selectedDate }),
+      ]);
+      setProjects(nextProjects.filter((project) => project.status === "ACTIVE"));
+      setTasks(nextTasks);
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : "Unable to load planner data.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   useEffect(() => {
-    async function loadPlannerData() {
-      try {
-        setIsLoading(true);
-        setPageError(null);
-        const [nextProjects, nextTasks] = await Promise.all([
-          listProjects(),
-          listTasks({ date: selectedDate }),
-        ]);
-        setProjects(nextProjects.filter((project) => project.status === "ACTIVE"));
-        setTasks(nextTasks);
-      } catch (error) {
-        setPageError(error instanceof Error ? error.message : "Unable to load planner data.");
-      } finally {
-        setIsLoading(false);
-      }
+    void loadPlannerData();
+  }, [selectedDate]);
+
+  useEffect(() => {
+    function handleTimerUpdated() {
+      void loadPlannerData();
     }
 
-    void loadPlannerData();
+    window.addEventListener(TIMER_UPDATED_EVENT, handleTimerUpdated);
+    return () => window.removeEventListener(TIMER_UPDATED_EVENT, handleTimerUpdated);
   }, [selectedDate]);
 
   async function handleCreate(values: CreateTaskInput) {
@@ -95,6 +106,36 @@ export default function PlannerPage() {
       }
     } catch (error) {
       setPageError(error instanceof Error ? error.message : "Unable to delete task.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleTimerAction(taskId: string, action: "start" | "pause" | "resume" | "stop") {
+    try {
+      setBusyId(taskId);
+      setPageError(null);
+
+      if (action === "start") {
+        await startTimer(taskId);
+      }
+
+      if (action === "pause") {
+        await pauseTimer(taskId);
+      }
+
+      if (action === "resume") {
+        await resumeTimer(taskId);
+      }
+
+      if (action === "stop") {
+        await stopTimer(taskId);
+      }
+
+      await loadPlannerData();
+      notifyTimerUpdated();
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : "Unable to update timer.");
     } finally {
       setBusyId(null);
     }
@@ -182,6 +223,10 @@ export default function PlannerPage() {
                 setEditingId(task.id);
                 setFormError(null);
               }}
+              onPauseTimer={() => void handleTimerAction(task.id, "pause")}
+              onResumeTimer={() => void handleTimerAction(task.id, "resume")}
+              onStartTimer={() => void handleTimerAction(task.id, "start")}
+              onStopTimer={() => void handleTimerAction(task.id, "stop")}
               task={task}
             />
           ),

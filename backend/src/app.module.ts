@@ -7,6 +7,7 @@ import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ProjectsModule } from "./projects/projects.module";
 import { TasksModule } from "./tasks/tasks.module";
+import { TimerModule } from "./timer/timer.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TasksModule } from "./tasks/tasks.module";
     AuthModule,
     ProjectsModule,
     TasksModule,
+    TimerModule,
   ],
 })
 export class AppModule {}

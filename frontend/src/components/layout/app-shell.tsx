@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 
+import { ActiveTimerBar } from "@/components/layout/active-timer-bar";
 import { Button } from "@/components/ui/button";
 import { me } from "@/lib/auth-api";
 import { clearAccessToken, getAccessToken } from "@/lib/auth-token";
@@ -107,6 +108,7 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </nav>
       </header>
+      <ActiveTimerBar />
       {children}
     </div>
   );

@@ -26,6 +26,8 @@ export type TaskStatus = "PLANNED" | "IN_PROGRESS" | "PAUSED" | "COMPLETED" | "C
 
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
 
+export type TimeSessionStatus = "RUNNING" | "PAUSED" | "COMPLETED";
+
 export type Project = {
   id: string;
   userId: string;
@@ -61,6 +63,32 @@ export type Task = {
   createdAt: string;
   updatedAt: string;
   project: TaskProject;
+};
+
+export type TimerTaskSummary = {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  project: TaskProject;
+};
+
+export type TimeSession = {
+  id: string;
+  userId: string;
+  taskId: string;
+  startedAt: string;
+  pausedAt: string | null;
+  endedAt: string | null;
+  durationSeconds: number;
+  elapsedSeconds: number;
+  status: TimeSessionStatus;
+  createdAt: string;
+  updatedAt: string;
+  task: TimerTaskSummary;
+};
+
+export type ActiveTimerResponse = {
+  session: TimeSession | null;
 };
 
 export type CreateProjectInput = {

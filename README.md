@@ -2,7 +2,7 @@
 
 GrowthOS is a personal success operating system for planning intentional work, tracking focused time, measuring consistency, and building momentum across career, business, health, and personal growth goals.
 
-This repository currently contains the Phase 3 projects and tasks foundation, prepared for deployment before Phase 4. Timers, time sessions, analytics, logs, Pomodoro flows, habits, journals, workouts, payments, and dashboard metrics are intentionally not implemented yet.
+This repository currently contains the Phase 4 projects, tasks, and task timer foundation. Analytics, logs metrics, Pomodoro flows, habits, journals, workouts, payments, and dashboard metrics are intentionally not implemented yet.
 
 ## Stack
 
@@ -55,6 +55,12 @@ Auth endpoints:
 - `PATCH /tasks/:id`
 - `DELETE /tasks/:id`
 - `PATCH /tasks/:id/complete`
+- `POST /tasks/:taskId/timer/start`
+- `POST /tasks/:taskId/timer/pause`
+- `POST /tasks/:taskId/timer/resume`
+- `POST /tasks/:taskId/timer/stop`
+- `GET /timer/active`
+- `GET /tasks/:taskId/sessions`
 
 Set up frontend environment:
 
@@ -171,7 +177,8 @@ E2E notes:
 - Local Docker PostgreSQL is mapped to `localhost:5433` to avoid collisions with other Postgres instances that may already be using `5432`.
 - Playwright starts the backend on `http://localhost:4000` and the frontend on `http://localhost:3000`.
 - `npm run test:e2e:headed` runs the same Chromium test flow in a visible browser window.
-- The e2e test creates a unique user, project, and task on every run to avoid collisions.
+- The e2e tests create unique users, projects, and tasks on every run to avoid collisions.
+- Timer e2e covers start, pause, resume, and stop without asserting exact elapsed seconds.
 
 Projects and tasks notes:
 
@@ -179,6 +186,9 @@ Projects and tasks notes:
 - Tasks must belong to a project owned by the same authenticated user.
 - Planner tasks are filtered by selected date using `YYYY-MM-DD`.
 - Scheduled task dates are stored as UTC midnight dates to keep planner filtering consistent.
+- Timer sessions are scoped to the authenticated user and task.
+- Only one running or paused timer is allowed per user.
+- Stopping a timer completes the time session but leaves the task open.
 
 ## Phase 1 Checklist
 
@@ -223,3 +233,13 @@ Projects and tasks notes:
 - [x] Local Playwright config for frontend and backend web servers
 - [x] E2E scripts for headless and UI mode
 - [x] End-to-end flow covering register, login, project creation, task creation, and task completion
+
+## Phase 4 Checklist
+
+- [x] Prisma `TimeSession` model and `TimeSessionStatus` enum
+- [x] Guarded timer endpoints for start, pause, resume, stop, active timer, and task sessions
+- [x] Single active timer enforcement per user
+- [x] Timer actions update task status without auto-completing tasks
+- [x] Active timer bar in the protected app shell
+- [x] Planner task cards with timer controls
+- [x] Playwright timer flow for start, pause, resume, and stop
